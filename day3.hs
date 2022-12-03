@@ -16,7 +16,7 @@ main = do
   let sacks = lines rawInput
   let comps = map (\x -> let half = length x `div` 2 in [take half x, take half $ reverse x]) sacks
   let theItems = map (\x -> nub $ intersect (head x) (last x)) comps
-  let alphabet = map (: []) $ take 52 $ ['a'..'z'] ++ ['A' .. 'z']
+  let alphabet = map (: []) $ ['a'..'z'] ++ ['A' .. 'Z']
   let myMap = M.fromList $ zip alphabet [1..]
   let solution1 = sum $ map (\x -> resolve $ M.lookup x myMap) theItems 
   print solution1

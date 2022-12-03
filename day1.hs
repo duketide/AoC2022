@@ -7,6 +7,6 @@ main = do
   let input = map (sum . map readInt . lines) $ splitOn "\n\n" rawInput
   let solution1 = maximum input 
   let list2 = reverse $ sort input
-  let solution2 = head list2 + list2 !! 1 + list2 !! 2
+  let solution2 = sum $ take 3 list2
   print solution1 
   print solution2
