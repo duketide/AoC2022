@@ -1,6 +1,6 @@
 import MyUtils
 import Data.List (transpose)
-import Data.List.Split (splitOn, chunksOf)
+import Data.List.Split (splitOn)
 import qualified Data.Map as M
 
 type Crates = M.Map Int String
