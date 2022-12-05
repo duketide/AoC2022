@@ -1,6 +1,4 @@
 import MyUtils
-import Data.List
-import Data.List.Split (splitOn, chunksOf)
 import qualified Data.Map as M
 
 one = "RHMPZ"
