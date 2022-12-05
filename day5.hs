@@ -1,17 +1,7 @@
 import MyUtils
+import Data.List (transpose)
+import Data.List.Split (splitOn, chunksOf)
 import qualified Data.Map as M
-
-one = "RHMPZ"
-two = "BJCP"
-three = "DCLGHNS"
-four = "LRSQDMTF"
-five = "MZTBQPSF"
-six = "GBZSFT"
-seven = "VRN"
-eight = "MCVDTLGP"
-nine = "LMFJNQW"
-
-stacks = M.fromList $ zip [1..] [one, two, three, four, five, six, seven, eight, nine]
 
 type Crates = M.Map Int String
 
@@ -34,7 +24,9 @@ makeMoves moves myMap bool = foldl (\acc x -> moveIter x acc bool) myMap moves
 
 main = do
   rawInput <- readFile "day5.txt"
-  let moveInput = map (map readInt . words . \str -> filter (`notElem` "movefrt") str) $ lines rawInput
+  let crates = map trim $ filter (any (`elem` ['A'..'Z'])) $ transpose $ init $ lines $ head $ splitOn "\n\n" rawInput
+  let stacks = M.fromList $ zip [1..] crates 
+  let moveInput = map (map readInt . words . \str -> filter (`notElem` "movefrt") str) $ lines $ last $ splitOn "\n\n" rawInput
   let solution1 = map (head . snd) $ M.toList $ makeMoves moveInput stacks True 
   print solution1
   let solution2 = map (head . snd) $ M.toList $ makeMoves moveInput stacks False 
