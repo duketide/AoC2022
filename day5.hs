@@ -25,9 +25,9 @@ makeMoves moves myMap bool = foldl (\acc x -> moveIter x acc bool) myMap moves
 main = do
   rawInput <- readFile "day5.txt"
   let crates = map trim $ filter (any (`elem` ['A'..'Z'])) $ transpose $ init $ lines $ head $ splitOn "\n\n" rawInput
-  let stacks = M.fromList $ zip [1..] crates 
-  let moveInput = map (map readInt . words . \str -> filter (`notElem` "movefrt") str) $ lines $ last $ splitOn "\n\n" rawInput
-  let solution1 = map (head . snd) $ M.toList $ makeMoves moveInput stacks True 
+      stacks = M.fromList $ zip [1..] crates 
+      moveInput = map (map readInt . words . \str -> filter (`notElem` "movefrt") str) $ lines $ last $ splitOn "\n\n" rawInput
+      solution1 = map (head . snd) $ M.toList $ makeMoves moveInput stacks True 
   print solution1
   let solution2 = map (head . snd) $ M.toList $ makeMoves moveInput stacks False 
   print solution2
