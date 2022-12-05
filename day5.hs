@@ -15,7 +15,9 @@ nine = "LMFJNQW"
 
 stacks = M.fromList $ zip [1..] [one, two, three, four, five, six, seven, eight, nine]
 
-moveFrom :: M.Map Int String -> [Int] -> (M.Map Int String, Int, String)
+type Crates = M.Map Int String
+
+moveFrom :: Crates -> [Int] -> (Crates, Int, String)
 moveFrom myMap [num, start, end] = (M.insert start newStart myMap, end, newEnd) 
   where
    starter  = resolver $ M.lookup start myMap
@@ -23,26 +25,26 @@ moveFrom myMap [num, start, end] = (M.insert start newStart myMap, end, newEnd)
    newEnd   = reverse (take num starter) ++ resolver (M.lookup end myMap)
 
 --Just remove the "reverse" from newEnd
-moveFrom' :: M.Map Int String -> [Int] -> (M.Map Int String, Int, String)
+moveFrom' :: Crates -> [Int] -> (Crates, Int, String)
 moveFrom' myMap [num, start, end] = (M.insert start newStart myMap, end, newEnd) 
   where
    starter  = resolver $ M.lookup start myMap
    newStart = drop num starter 
    newEnd   = take num starter ++ resolver (M.lookup end myMap)
 
-moveTo :: (M.Map Int String, Int, String) -> M.Map Int String
+moveTo :: (Crates, Int, String) -> Crates 
 moveTo (myMap, end, newEnd) = M.insert end newEnd myMap
 
-moveIter :: [Int] -> M.Map Int String -> M.Map Int String
+moveIter :: [Int] -> Crates -> Crates
 moveIter move myMap = moveTo $ moveFrom myMap move
 
-moveIter' :: [Int] -> M.Map Int String -> M.Map Int String
+moveIter' :: [Int] -> Crates -> Crates
 moveIter' move myMap = moveTo $ moveFrom' myMap move
 
-makeMoves :: [[Int]] -> M.Map Int String -> M.Map Int String
+makeMoves :: [[Int]] -> Crates -> Crates 
 makeMoves moves myMap = foldl (flip moveIter) myMap moves
 
-makeMoves' :: [[Int]] -> M.Map Int String -> M.Map Int String
+makeMoves' :: [[Int]] -> Crates -> Crates 
 makeMoves' moves myMap = foldl (flip moveIter') myMap moves
 
 main = do
