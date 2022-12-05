@@ -9,7 +9,7 @@ overlap x = common == length (last x) || common == length (head x)
 main = do
   rawInput <- readFile "day4.txt"
   let input = map (map ((\x -> [(head x)..(last x)]) . map readInt . splitOn "-") . splitOn ",") $ lines rawInput
-  let solution1 = sum $ map (\x -> if overlap x then 1 else 0) input
+  let solution1 = foldl (\acc x -> if overlap x then acc + 1 else acc) 0 input
   print solution1
   let solution2 = length $ filter (not . null) $ map (\x -> head x `intersect` last x) input 
   print solution2
