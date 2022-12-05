@@ -1,17 +1,15 @@
 import MyUtils
 import Data.List
-import Data.List.Split (splitOn, chunksOf)
-import qualified Data.Map as M
+import Data.List.Split (splitOn)
 
-resolve :: Maybe a -> a 
-resolve (Just x) = x
-resolve Nothing = error "You've committed a grave error. Stop trying."
+overlap :: [[Int]] -> Bool
+overlap x = common == length (last x) || common == length (head x)
+  where common = length $ head x `intersect` last x
 
 main = do
   rawInput <- readFile "day4.txt"
-  let input1 = map (map ((\x -> [(head x)..(last x)]) . map readInt . splitOn "-") . splitOn ",") $ lines rawInput
-  let solution1 = sum $ map (\x -> if length (intersect (head x) (last x)) == length (last x) || length (intersect (head x) (last x)) == length (head x) then 1 else 0) input1
+  let input = map (map ((\x -> [(head x)..(last x)]) . map readInt . splitOn "-") . splitOn ",") $ lines rawInput
+  let solution1 = sum $ map (\x -> if overlap x then 1 else 0) input
   print solution1
-  let input2 = input1
-  let solution2 = length $ filter (\x -> length x > 0) $ map (\x -> intersect (head x) (last x)) input2 
+  let solution2 = length $ filter (not . null) $ map (\x -> head x `intersect` last x) input 
   print solution2
