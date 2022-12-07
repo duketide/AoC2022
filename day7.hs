@@ -7,7 +7,6 @@ import Data.Bifunctor (second)
 type Dir = (Int, [Path])
 type FS = M.Map Path Dir
 type Inst =[[String]]
-type PWD = String
 type Path = [String]
 
 cmdFind :: Inst -> (Inst, Inst)
@@ -30,7 +29,7 @@ getFandD fs loc inst = (M.insert loc new fs, dropWhile (\x -> head x /= "$") ins
         newDirs   = map (\x -> loc ++ [last x]) dirs
 
 fullMove :: FS -> Path -> Inst -> (FS, Inst, Path)
-fullMove fs path []      = (fs, [], path)
+fullMove fs path []   = (fs, [], path)
 fullMove fs path inst = (nextFs, nextInst, nextPath)
  where (cmds', cts)       = cmdFind inst
        cmds               = init cmds'
@@ -45,7 +44,7 @@ sumSizes :: Dir -> FS -> Int
 sumSizes (size, dirs) fs = go size dirs [] 
  where
    go :: Int -> [Path] -> [Path] -> Int
-   go size [] _               = size
+   go size [] _ = size
    go size uncounted counted
      | any (\x -> x == head uncounted) counted = go size (tail uncounted) counted
      | otherwise = go (size + fst thisDir) (tail uncounted ++ filter (\x -> isNothing (find (==x) counted)) (snd thisDir)) (head uncounted : counted)
@@ -54,7 +53,7 @@ sumSizes (size, dirs) fs = go size dirs []
 main = do
   rawInput <- readFile "day7.txt"
   let input = lines rawInput
-      inst = map words input
+      inst  = map words input
       populated = M.map (second nub) $ populate (M.empty, inst, [])
       sized = M.map (`sumSizes` populated) populated
       filtered = M.filter (<= 100000) sized
