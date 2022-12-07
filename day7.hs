@@ -36,7 +36,6 @@ fullMove fs path inst = (nextFs, nextInst, nextPath)
        cmds               = init cmds'
        nextPath           = dirMover path cmds
        (nextFs, nextInst) = getFandD fs nextPath cts
-       pwd               = last nextPath 
 
 populate :: (FS, Inst, Path) -> FS
 populate (fs, [], path)   = fs
