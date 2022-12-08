@@ -22,8 +22,7 @@ mapper' trees = go trees []
         (num, view) = tree
         checklist = map fst $ tail current
         viewUntilStop = length $ takeWhile (<num) checklist
-        newView' = if viewUntilStop == length checklist then viewUntilStop else viewUntilStop + 1
-        newView = max newView' 1
+        newView = if viewUntilStop == length checklist then viewUntilStop else viewUntilStop + 1
 
 fullMapper :: ([a] -> [a]) -> [[a]] -> [[a]]
 fullMapper func lst = fourth
@@ -41,7 +40,6 @@ main = do
       solution = sum $ map (foldr (\x acc -> if snd x then acc + 1 else acc) 0) first
       input2 = map (map (\x -> (readInt [x], []))) $ lines rawInput
       second = fullMapper mapper' input2
-      chopped = tail $ init $ transpose $ tail $ init second
-      solution2 = maximum $ concatMap (map (product . snd)) chopped 
+      solution2 = maximum $ concatMap (map (product . snd)) second 
   print solution 
   print solution2
