@@ -1,5 +1,5 @@
 import MyUtils (readInt)
-import Data.List (nub, sortBy, find)
+import Data.List (nub, find)
 import qualified Data.Map as M
 import Data.Maybe (fromJust, isNothing)
 import Data.Bifunctor (second)
@@ -23,7 +23,7 @@ getFandD fs loc inst = (M.insert loc new fs, dropWhile (\x -> head x /= "$") ins
   where current   = M.lookup loc fs
         new       = if isNothing current then (sizes, newDirs) else (fst (fromJust current) + sizes, snd (fromJust current) ++ newDirs)
         sizes     = sum $ map (readInt . head) files
-        cntntList = sortBy (\a b -> head a `compare` head b) $ takeWhile (\x -> head x /= "$") inst
+        cntntList = takeWhile (\x -> head x /= "$") inst
         files     = filter (\x -> head x /= "dir") cntntList
         dirs      = filter (\x -> head x == "dir") cntntList
         newDirs   = map (\x -> loc ++ [last x]) dirs
