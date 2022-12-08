@@ -19,8 +19,7 @@ mapper' trees = go trees []
     go current result = go (tail current) ((num, newView :view) : result)
       where
         tree = head current
-        num = fst tree
-        view = snd tree
+        (num, view) = tree
         checklist = map fst $ tail current
         viewUntilStop = length $ takeWhile (<num) checklist
         newView' = if viewUntilStop == length checklist then viewUntilStop else viewUntilStop + 1
