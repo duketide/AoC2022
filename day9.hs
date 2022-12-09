@@ -25,15 +25,8 @@ tailMover (x1, y1) (x2, y2)
         vertical = x1 == x2
         adjacent = abs dx <= 1 && abs dy <= 1
 
-fullMove :: (Point, Point, S.Set Point) -> String -> (Point, Point, S.Set Point)
-fullMove (hd, tl, visited) str = (newHead, newTail, newV)
-  where
-    newHead = headMover hd str
-    newTail = tailMover newHead tl
-    newV    = S.insert newTail visited
-
-fullMove' :: ([Point], S.Set Point) -> String -> ([Point], S.Set Point)
-fullMove' (knots, visited) str = go movedHead (tail knots) [movedHead] visited
+fullMove :: ([Point], S.Set Point) -> String -> ([Point], S.Set Point)
+fullMove (knots, visited) str = go movedHead (tail knots) [movedHead] visited
   where
     movedHead = headMover (head knots) str
     go :: Point -> [Point] -> [Point] -> S.Set Point -> ([Point], S.Set Point)
@@ -48,8 +41,8 @@ main = do
   rawInput <- readFile "day9.txt"
   let input = map words $ lines rawInput
       singles = concatMap (\x -> replicate (readInt $ last x) (head x)) input
-      (_, _, mvs) = foldl fullMove ((0, 0), (0,0), S.empty) singles
+      (_, mvs) = foldl fullMove ([(0,0), (0,0)], S.empty) singles
       primeStarter = (replicate 10 (0,0), S.empty)
-      (_, mvs') = foldl fullMove' primeStarter singles
+      (_, mvs') = foldl fullMove primeStarter singles
   print $ S.size mvs 
   print $ S.size mvs'
