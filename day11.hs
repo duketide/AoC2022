@@ -1,10 +1,8 @@
 import MyUtils
-import Data.List
-import Data.List.Split
+import Data.List (sort)
+import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
 import qualified Data.Map as M
-import qualified Data.Set as C
-import Data.Char
 
 type MnkMap = M.Map Int Mnky 
 type Mnky = M.Map String String
