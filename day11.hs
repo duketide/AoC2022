@@ -7,15 +7,13 @@ import qualified Data.Map as M
 data Monkey = Monkey {
                         mId :: Int
                       , mItems :: [Int]
-                      , mOp :: String
-                      , mSelfOp :: Bool
-                      , mOpNum :: Int
+                      , mOp :: Int -> Int 
                       , mTest :: Int
                       , mTrue :: Int
                       , mFalse :: Int
                       , handled :: Int
                       , mLcm :: Int
-                      } deriving (Show)
+                      } 
 
 type MonkeyMap = M.Map Int Monkey
 
@@ -30,8 +28,6 @@ monkeyMapper int (idList
                                  mId=newId
                                  , mItems=startItems
                                  , mOp=newOp
-                                 , mSelfOp=selfOp
-                                 , mOpNum=opNum
                                  , mTest
                                  , mTrue=newTrue
                                  , mFalse=newFalse
@@ -41,7 +37,10 @@ monkeyMapper int (idList
   where
     newId = readInt [head $ last idList]
     startItems = map (readInt . filter (/= ',')) $ drop 2 items
-    newOp = op !! 4
+    newOp 
+      | selfOp         = (^2)
+      | op !! 4 == "+" = (+ opNum)
+      | otherwise      = (* opNum)
     selfOp = op !! 5 == "old"
     opNum = if selfOp then 0 else readInt (op !! 5)
     mTest = readInt $ last tst
@@ -53,8 +52,6 @@ updateItems ints Monkey {
                         mId
                         , mItems
                         , mOp
-                        , mSelfOp
-                        , mOpNum
                         , mTest
                         , mTrue
                         , mFalse
@@ -64,8 +61,6 @@ updateItems ints Monkey {
                                     mId
                                    , mItems=ints
                                    , mOp
-                                   , mSelfOp
-                                   , mOpNum
                                    , mTest
                                    , mTrue
                                    , mFalse
@@ -81,16 +76,13 @@ monkeyTosser bool mnk
      newMnk = updateItems [] mnk
      oldItems = mItems mnk
      op = mOp mnk 
-     operator = if op == "+" then (+) else (*)
-     old = mSelfOp mnk 
      testNum = mTest mnk 
      pairs = map mapper oldItems
          where
             mapper item = (nextMnk, result)
                where
-                  result = if bool then operator operand item `div` 3 else operator operand item `mod` myLcm
+                  result = if bool then op item `div` 3 else op item `mod` myLcm
                   nextMnk = if test then mTrue mnk else mFalse mnk
-                  operand  = if old then item else mOpNum mnk 
                   test = mod result testNum == 0
                   myLcm = mLcm mnk
 
