@@ -1,80 +1,136 @@
-import MyUtils
+import MyUtils (readInt)
 import Data.List (sort)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
 import qualified Data.Map as M
 
-type MnkMap = M.Map Int Mnky 
-type Mnky = M.Map String String
+data Monkey = Monkey {
+                        mId :: Int
+                      , mItems :: [Int]
+                      , mOp :: String
+                      , mSelfOp :: Bool
+                      , mOpNum :: Int
+                      , mTest :: Int
+                      , mTrue :: Int
+                      , mFalse :: Int
+                      , handled :: Int
+                      , mLcm :: Int
+                      } deriving (Show)
 
-monkeyMapper :: Int -> [[String]] -> Mnky 
-monkeyMapper int (id:items:op:tst:tr:fls:xs) = M.fromList monkeyMap 
+type MonkeyMap = M.Map Int Monkey
+
+monkeyMapper :: Int -> [[String]] -> Monkey 
+monkeyMapper int (id
+                   :items
+                   :op
+                   :tst
+                   :tr
+                   :fls
+                   :xs) = Monkey {
+                                 mId=newId
+                                 , mItems=startItems
+                                 , mOp=newOp
+                                 , mSelfOp=selfOp
+                                 , mOpNum=opNum
+                                 , mTest
+                                 , mTrue=newTrue
+                                 , mFalse=newFalse
+                                 , handled=0
+                                 , mLcm=int
+                                 } 
   where
-    mId = [head $ last id]
-    mItems = map (filter (/= ',')) $ drop 2 items
-    mOp = unwords $ drop 4 op
-    mTest = last tst
-    mTrue = last tr
-    mFalse = last fls
-    monkeyMap = [("id", mId), ("items", unwords mItems), ("op", mOp), ("test", mTest), ("true", mTrue), ("false", mFalse), ("handled", "0"), ("lcm", show int)]
+    newId = readInt [head $ last id]
+    startItems = map (readInt . filter (/= ',')) $ drop 2 items
+    newOp = op !! 4
+    selfOp = op !! 5 == "old"
+    opNum = if selfOp then 0 else readInt (op !! 5)
+    mTest = readInt $ last tst
+    newTrue = readInt $ last tr
+    newFalse = readInt $ last fls
 
-monkeyTosser :: Bool -> Mnky -> (Mnky, [(Int, Int)])
+updateItems :: [Int] -> Monkey -> Monkey
+updateItems ints Monkey {
+                        mId
+                        , mItems
+                        , mOp
+                        , mSelfOp
+                        , mOpNum
+                        , mTest
+                        , mTrue
+                        , mFalse
+                        , handled
+                        , mLcm
+                        } = Monkey {
+                                    mId
+                                   , mItems=ints
+                                   , mOp
+                                   , mSelfOp
+                                   , mOpNum
+                                   , mTest
+                                   , mTrue
+                                   , mFalse
+                                   , handled=if null ints then handled + length mItems else handled
+                                   , mLcm
+                                   }
+
+monkeyTosser :: Bool -> Monkey -> (Monkey, [(Int, Int)])
 monkeyTosser bool mnk
-  | fromJust (M.lookup "items" mnk) == "empty" = (mnk, [])
-  | otherwise = (M.insert "handled" newNum (M.insert "items" "empty" mnk), pairs)
+  | null $ mItems mnk = (mnk, [])
+  | otherwise = (newMnk, pairs)
   where
-     newNum = show $ length items + readInt (fromJust $ M.lookup "handled" mnk)
-     items = map readInt $ words $ fromJust $ M.lookup "items" mnk
-     op = words $ fromJust $ M.lookup "op" mnk 
-     operator = if head op == "+" then (+) else (*)
-     old = last op == "old"
-     testNum = readInt $ fromJust $ M.lookup "test" mnk
-     pairs = map mapper items
+     newMnk = updateItems [] mnk
+     oldItems = mItems mnk
+     op = mOp mnk 
+     operator = if op == "+" then (+) else (*)
+     old = mSelfOp mnk 
+     testNum = mTest mnk 
+     pairs = map mapper oldItems
          where
-            mapper item = (newMnk, result)
+            mapper item = (nextMnk, result)
                where
                   result = if bool then operator operand item `div` 3 else operator operand item `mod` myLcm
-                  newMnk = if test then readInt $ fromJust $ M.lookup "true" mnk else readInt $ fromJust $ M.lookup "false" mnk
-                  operand  = if old then item else readInt (last op)
+                  nextMnk = if test then mTrue mnk else mFalse mnk
+                  operand  = if old then item else mOpNum mnk 
                   test = mod result testNum == 0
-                  myLcm = readInt $ fromJust $ M.lookup "lcm" mnk
+                  myLcm = mLcm mnk
 
-inserter :: (MnkMap, [(Int, Int)]) -> MnkMap 
+inserter :: (MonkeyMap, [(Int, Int)]) -> MonkeyMap 
 inserter (mp, [])   = mp
 inserter (mp, (x, y):xs) = inserter (newMap, xs)
   where
     oldSub = fromJust $ M.lookup x mp
-    oldItems = fromJust $ M.lookup "items" oldSub
-    newItems = if oldItems == "empty" then show y else oldItems ++ " " ++ show y
-    newSub = M.insert "items" newItems oldSub
+    oldItems = mItems oldSub
+    newItems = if null oldItems then [y] else oldItems ++ [y]
+    newSub = updateItems newItems oldSub
     newMap = M.insert x newSub mp
 
-turn :: Bool -> MnkMap -> Int -> MnkMap
+turn :: Bool -> MonkeyMap -> Int -> MonkeyMap
 turn bool mp int = inserter (newMap, pairs)
   where 
     monkey = fromJust $ M.lookup int mp
     (newMnk, pairs) = monkeyTosser bool monkey
     newMap = M.insert int newMnk mp
 
-singleRound :: Bool -> MnkMap -> MnkMap
+singleRound :: Bool -> MonkeyMap -> MonkeyMap
 singleRound bool mp = go 0 mp
   where
     go 8   mp = mp
     go num mp = go (num + 1) (turn bool mp num)
 
-roundIter :: Bool -> Int -> MnkMap -> MnkMap
+roundIter :: Bool -> Int -> MonkeyMap -> MonkeyMap
 roundIter bool int mp = go int mp
   where
     go 0   mp = mp
     go num mp = go (num - 1) (singleRound bool mp)
 
+solver :: Bool -> Int -> MonkeyMap -> Int
+solver bool int mp = product $ take 2 $ reverse $ sort $ map (\(x, y) -> handled y) $ M.toList $ roundIter bool int mp
+
 main = do
   rawInput <- readFile "day11.txt"
   let input = map (map words . lines) $ splitOn "\n\n" rawInput
       myLcm = product $ map (\x -> readInt $ last (x !! 3)) input
-      monkeys = map (monkeyMapper myLcm) input
-      monkeyMap = M.fromList $ zip [0..] monkeys
-      result1 = product $ take 2 $ reverse $ sort $ map (\(x, y) -> readInt $ fromJust $ M.lookup "handled" y) $ M.toList $ roundIter True 20 monkeyMap
-      result2 = product $ take 2 $ reverse $ sort $ map (\(x, y) -> readInt $ fromJust $ M.lookup "handled" y) $ M.toList $ roundIter False 10000 monkeyMap
-  print result1
-  print result2
+      monkeys' = map (monkeyMapper myLcm) input
+      monkeyMap = M.fromList $ zip [0..] monkeys'
+  print $ solver True 20 monkeyMap 
+  print $ solver False 10000 monkeyMap 
