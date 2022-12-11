@@ -6,7 +6,7 @@ counter strs int = int * (strs !! (int - 1))
 
 sprtPos :: Int -> [Int] -> [Int] -> [Int]
 sprtPos _ []    result = reverse result 
-sprtPos n moves result = sprtPos (n + head moves) (tail moves) ((n + head moves) : result)
+sprtPos n (m : moves) result = sprtPos (n + m) moves ((n + m) : result)
 
 main = do
  rawInput <- readFile "day10.txt"
