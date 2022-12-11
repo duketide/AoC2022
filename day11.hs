@@ -114,8 +114,9 @@ turn bool mp int = inserter (newMap, pairs)
 singleRound :: Bool -> MonkeyMap -> MonkeyMap
 singleRound bool mp = go 0 mp
   where
-    go 8   mp = mp
-    go num mp = go (num + 1) (turn bool mp num)
+    go num mp
+      | num == M.size mp = mp
+      | otherwise        = go (num + 1) (turn bool mp num)
 
 roundIter :: Bool -> Int -> MonkeyMap -> MonkeyMap
 roundIter bool int mp = go int mp
