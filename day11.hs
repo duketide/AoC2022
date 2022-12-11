@@ -20,13 +20,13 @@ data Monkey = Monkey {
 type MonkeyMap = M.Map Int Monkey
 
 monkeyMapper :: Int -> [[String]] -> Monkey 
-monkeyMapper int (id
-                   :items
-                   :op
-                   :tst
-                   :tr
-                   :fls
-                   :xs) = Monkey {
+monkeyMapper int (idList
+                  :items
+                  :op
+                  :tst
+                  :tr
+                  :fls
+                  :xs) = Monkey {
                                  mId=newId
                                  , mItems=startItems
                                  , mOp=newOp
@@ -39,7 +39,7 @@ monkeyMapper int (id
                                  , mLcm=int
                                  } 
   where
-    newId = readInt [head $ last id]
+    newId = readInt [head $ last idList]
     startItems = map (readInt . filter (/= ',')) $ drop 2 items
     newOp = op !! 4
     selfOp = op !! 5 == "old"
