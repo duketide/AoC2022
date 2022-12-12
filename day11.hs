@@ -25,7 +25,7 @@ monkeyMapper int (idList
                   :tr
                   :fls
                   :xs) = Monkey {
-                                 mId=newId
+                                   mId=newId
                                  , mItems=startItems
                                  , mOp=newOp
                                  , mTest
@@ -48,25 +48,16 @@ monkeyMapper int (idList
     newFalse = readInt $ last fls
 
 updateItems :: [Int] -> Monkey -> Monkey
-updateItems ints Monkey {
-                        mId
-                        , mItems
-                        , mOp
-                        , mTest
-                        , mTrue
-                        , mFalse
-                        , handled
-                        , mLcm
-                        } = Monkey {
-                                    mId
-                                   , mItems=ints
-                                   , mOp
-                                   , mTest
-                                   , mTrue
-                                   , mFalse
-                                   , handled=if null ints then handled + length mItems else handled
-                                   , mLcm
-                                   }
+updateItems ints m@(Monkey {
+                             mId
+                           , mItems
+                           , mOp
+                           , mTest
+                           , mTrue
+                           , mFalse
+                           , handled
+                           , mLcm
+                           }) = m {mItems=ints, handled=if null ints then handled + length mItems else handled}
 
 monkeyTosser :: Bool -> Monkey -> (Monkey, [(Int, Int)])
 monkeyTosser bool mnk
@@ -123,7 +114,7 @@ main = do
   rawInput <- readFile "day11.txt"
   let input = map (map words . lines) $ splitOn "\n\n" rawInput
       myLcm = product $ map (\x -> readInt $ last (x !! 3)) input
-      monkeys' = map (monkeyMapper myLcm) input
-      monkeyMap = M.fromList $ zip [0..] monkeys'
+      monkeys = map (monkeyMapper myLcm) input
+      monkeyMap = M.fromList $ zip [0..] monkeys
   print $ solver True 20 monkeyMap 
   print $ solver False 10000 monkeyMap 
