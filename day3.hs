@@ -2,6 +2,7 @@ import MyUtils
 import Data.List
 import Data.List.Split (splitOn)
 import qualified Data.Map as M
+import Data.Maybe (fromJust)
 
 create3s :: [String] -> [[String]]
 create3s [] = []
@@ -14,9 +15,9 @@ main = do
   let theItems = map (\x -> nub $ intersect (head x) (last x)) comps
   let alphabet = map (: []) $ ['a'..'z'] ++ ['A' .. 'Z']
   let myMap = M.fromList $ zip alphabet [1..]
-  let solution1 = sum $ map (\x -> resolver $ M.lookup x myMap) theItems 
+  let solution1 = sum $ map (\x -> fromJust $ M.lookup x myMap) theItems 
   print solution1
   let input2 = create3s sacks 
   let badges = map (\(w:x:y:zs) -> nub $ (w `intersect` x) `intersect` y) input2
-  let solution2 = sum $ map (\x -> resolver $ M.lookup x myMap) badges
+  let solution2 = sum $ map (\x -> fromJust $ M.lookup x myMap) badges
   print solution2

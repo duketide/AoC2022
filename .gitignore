@@ -1,6 +1,8 @@
 *.hi
 *.o
 *.txt
+dist-newstyle
+app
 day1
 day2
 day3

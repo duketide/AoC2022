@@ -2,16 +2,17 @@ import MyUtils
 import Data.List (transpose)
 import Data.List.Split (splitOn)
 import qualified Data.Map as M
+import Data.Maybe (fromJust)
 
 type Crates = M.Map Int String
 
 moveFrom :: Crates -> [Int] -> Bool -> (Crates, Int, String)
 moveFrom myMap [num, start, end] bool = (M.insert start newStart myMap, end, newEnd) 
   where
-   starter  = resolver $ M.lookup start myMap
+   starter  = fromJust $ M.lookup start myMap
    newStart = drop num starter 
    deposit  = take num starter
-   newEnd   = (if bool then reverse deposit else deposit) ++ resolver (M.lookup end myMap)
+   newEnd   = (if bool then reverse deposit else deposit) ++ fromJust (M.lookup end myMap)
 
 moveTo :: (Crates, Int, String) -> Crates 
 moveTo (myMap, end, newEnd) = M.insert end newEnd myMap
