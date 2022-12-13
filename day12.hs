@@ -11,16 +11,16 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.List (sort)
 
-data DState = DState
-  { nodeQueue :: MinPrioHeap Int Int
-  , distMap :: Map Int Int
-  , visited :: Set Int
-  }
-
 type Index = Int
 type Height = Int
 type Neighbors = [Index]
 type Graph = Map Index (Height, Neighbors)
+
+data DState = DState
+  { nodeQueue :: MinPrioHeap Int Index 
+  , distMap :: Map Index Int
+  , visited :: Set Index
+  }
 
 trillion = 10^12
 
@@ -39,14 +39,14 @@ nodeGrapher graph len totLen = go (M.size graph - 1) graph
         right = if index `mod` len + 1 == 0 then (-1) else index + 1
         filtered = filter (\x -> x >= 0 && x < totLen) unfiltered
 
-trav :: Graph -> Int -> Int -> Map Int Int 
+trav :: Graph -> Index -> Index -> Map Index Int 
 trav graph src dest = go startState
   where
-    startQueue = H.singleton (0, src) :: MinPrioHeap Int Int
+    startQueue = H.singleton (0, src)
     distMap = M.singleton src 0
     visited = S.empty
     startState = DState startQueue distMap visited
-    go :: DState -> Map Int Int
+    go :: DState -> Map Index Int
     go ds@(DState q0 d0 v0) = case H.view q0 of
       Nothing -> d0
       Just ((minDist, node), q1) -> if node == dest then d0
@@ -68,10 +68,10 @@ trav graph src dest = go startState
                       else ds
 
 
-multiTrav :: Graph -> [Int] -> Int -> [Int]
+multiTrav :: Graph -> [Index] -> Index -> [Int]
 multiTrav graph srcs dest = go srcs []
   where
-    go :: [Int] -> [Int] -> [Int]
+    go :: [Index] -> [Int] -> [Int]
     go []   dists = dists
     go (x:xs) dists = go xs (fromMaybe trillion (M.lookup dest $ trav graph x dest):dists)
 
@@ -86,8 +86,6 @@ main = do
       dest = fst $ head $ M.toList $ M.filter (\(x, y) -> x == 'E') indexed 
       nums = M.map (\(y,z) ->if y `elem` ['a'..'z'] then (ord y, z) else if y == 'S' then (ord 'a', z) else (ord 'z', z)) indexed
       mapSize = M.size nums
-      queue = H.singleton (0, source) :: MinPrioHeap Int Int
-      distMap = M.singleton source 0
       graph = nodeGrapher nums lineLen mapSize
       traversed = trav graph source dest
       dists = multiTrav graph (source:otherSources) dest
