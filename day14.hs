@@ -2,7 +2,6 @@ import MyUtils (readInt)
 import Data.List.Split (splitOn)
 import Data.Set (Set)
 import qualified Data.Set as S
-import GHC.Types.CostCentre (currentCCS)
 
 type Point = (Int, Int)
 
