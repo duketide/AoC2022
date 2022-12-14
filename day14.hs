@@ -38,8 +38,8 @@ sandIter mp origin maxY minX maxX = go origin
           | otherwise                              = go result
              where result@(xr, yr) = sandMove mp current 
 
-sandIter' :: Set Point -> Point -> Int -> Int -> Int -> (Set Point, Bool)
-sandIter' mp origin maxY minX maxX = go origin
+sandIter' :: Set Point -> Point -> Int -> (Set Point, Bool)
+sandIter' mp origin maxY = go origin
   where go current@(xc, yc)
           | result == current || yc == maxY + 1 = (S.insert current mp, False)
           | otherwise                           = go result
@@ -54,14 +54,14 @@ voidFinder mp origin maxY minX maxX = go mp origin False
       where
         (newMp, newBool) = sandIter mp origin maxY minX maxX
 
-floorFinder :: Set Point -> Point -> Int -> Int -> Int -> Set Point
-floorFinder mp origin maxY minX maxX = go mp origin False
+floorFinder :: Set Point -> Point -> Int -> Set Point
+floorFinder mp origin maxY = go mp origin False
   where
     go :: Set Point -> Point -> Bool -> Set Point
     go mp _ True      = mp 
     go mp origin bool = if S.member (500, 0) mp then mp else go newMp origin newBool
       where
-        (newMp, newBool) = sandIter' mp origin maxY minX maxX
+        (newMp, newBool) = sandIter' mp origin maxY
 
 main = do
   rawInput <- readFile "day14.txt"
@@ -69,10 +69,9 @@ main = do
       pairs = map (map (\y -> (head y, last y))) input
       startMap = S.fromList $ concatMap rowFolder pairs
       maxY = maximum $ S.map snd startMap
-      minY = minimum $ S.map snd startMap
       maxX = maximum $ S.map fst startMap
       minX = minimum $ S.map fst startMap
       completed1 = voidFinder startMap (500, 0) maxY minX maxX
-      completed2 = floorFinder startMap (500, 0) maxY minX maxX
+      completed2 = floorFinder startMap (500, 0) maxY
   print $ S.size completed1 - S.size startMap
   print $ S.size completed2 - S.size startMap
