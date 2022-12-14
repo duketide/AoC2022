@@ -31,7 +31,7 @@ sandMove mp (x, y)
 
 sandIter :: Set Point -> Point -> Int -> Int -> Int -> (Set Point, Bool)
 sandIter mp origin maxY minX maxX = go origin
-  where go current@(xc, yc)
+  where go current
           | result == current                      = (S.insert current mp, False)
           | xr >= maxX || xr <= minX || yr >= maxY = (mp, True) 
           | otherwise                              = go result
@@ -39,10 +39,10 @@ sandIter mp origin maxY minX maxX = go origin
 
 sandIter' :: Set Point -> Point -> Int -> (Set Point, Bool)
 sandIter' mp origin maxY = go origin
-  where go current@(xc, yc)
+  where go current@(_, yc)
           | result == current || yc == maxY + 1 = (S.insert current mp, False)
           | otherwise                           = go result
-             where result@(xr, yr) = sandMove mp current 
+             where result = sandMove mp current 
 
 voidFinder :: Set Point -> Point -> Int -> Int -> Int -> Set Point
 voidFinder mp origin maxY minX maxX = go mp origin False
