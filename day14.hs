@@ -37,10 +37,10 @@ sandIter mp origin maxY minX maxX = go origin
           | otherwise                              = go result
              where result@(xr, yr) = sandMove mp current 
 
-sandIter' :: Set Point -> Point -> Int -> (Set Point, Bool)
+sandIter' :: Set Point -> Point -> Int -> Set Point
 sandIter' mp origin maxY = go origin
   where go current@(_, yc)
-          | result == current || yc == maxY + 1 = (S.insert current mp, False)
+          | result == current || yc == maxY + 1 = S.insert current mp
           | otherwise                           = go result
              where result = sandMove mp current 
 
@@ -54,13 +54,12 @@ voidFinder mp origin maxY minX maxX = go mp origin False
         (newMp, newBool) = sandIter mp origin maxY minX maxX
 
 floorFinder :: Set Point -> Point -> Int -> Set Point
-floorFinder mp origin maxY = go mp origin False
+floorFinder mp origin maxY = go mp origin
   where
-    go :: Set Point -> Point -> Bool -> Set Point
-    go mp _ True      = mp 
-    go mp origin bool = if S.member (500, 0) mp then mp else go newMp origin newBool
+    go :: Set Point -> Point -> Set Point
+    go mp origin = if S.member (500, 0) mp then mp else go newMp origin
       where
-        (newMp, newBool) = sandIter' mp origin maxY
+        newMp = sandIter' mp origin maxY
 
 main = do
   rawInput <- readFile "day14.txt"
