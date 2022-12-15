@@ -39,12 +39,11 @@ pairTaker prs = go target2
 
 
 gapFinder :: [(Int, Int)] -> (Bool, Int)
-gapFinder row = go 1 True
+gapFinder row = go 1
   where
-    go int bool
-      | not bool = (True, int + 1)
+    go int
       | int >= target2 = (False, 0)
-      | otherwise = if not newBool then (True, int + 1) else go newInt newBool
+      | otherwise = if not newBool then (True, int + 1) else go newInt
           where
             pair@(_, newInt) = fromMaybe (-1, -1) $ find (\(a, b) -> a <= int + 1 && b > int) row
             newBool = pair /= (-1, -1)
