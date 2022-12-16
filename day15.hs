@@ -52,7 +52,6 @@ main = do
   rawInput <- readFile "day15.txt"
   let input = map ((\x -> [(x!!2, x!!3), (x!!8, x!!9)]) . words) $ lines rawInput
       pairs = map (map (bimap (readInt . takeWhile isDigOrNeg . drop 2) (readInt . takeWhile isDigOrNeg . drop 2)))  input
-      dists = map (\(x:y:xs) -> (x, manDistance x y - 1)) pairs
       beaconsOnRow = filter (\x -> snd (last x) == target1) pairs
       badX = nub $ map (fst . last) beaconsOnRow
       segments = filter (\x -> x/= (-1,-1)) $ map (allPointMapper target1) pairs
