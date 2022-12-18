@@ -49,9 +49,10 @@ stateSpawns :: TGraph -> Int -> State -> [State]
 stateSpawns graph turn s@(State { pos, opened, score }) = newStates 
   where
     newStates
-      | timer == 1  = [State {pos = (dest, 0), opened = S.insert dest opened, score = score+sameScore}]
-      | timer == 0 = tnls
-      | otherwise   = [s {pos = (dest, timer -1)}]
+      | S.size opened == M.size graph - 1 = [s]
+      | timer == 1                        = [State {pos = (dest, 0), opened = S.insert dest opened, score = score+sameScore}]
+      | timer == 0                        = tnls
+      | otherwise                         = [s {pos = (dest, timer -1)}]
     sameValve = fst $ fromJust $ M.lookup dest graph 
     (dest, timer) = pos
     mult = turn - 1
@@ -64,15 +65,16 @@ stateSpawns' :: TGraph -> Int -> TwoState -> [TwoState]
 stateSpawns' graph turn s@(Two { pos1, pos2, opened2, score2 }) = newStates 
   where
     newStates
-      | timer1 > 1 && timer2 > 1    = [Two {pos1 = next1, pos2= next2, opened2 = opened2, score2 = score2}]
-      | timer1 == 1 && timer2 > 1   = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest1 opened2, score2 = score2 + oneScore}]
-      | timer2 == 1 && timer1 > 1   = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest2 opened2, score2 = score2 + twoScore}]
-      | timer1 == 1 && timer2 == 1  = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest2 $ S.insert dest1 opened2, score2 = if dest1 == dest2 then score2+oneScore else score2+oneScore+twoScore}]
-      | timer1 == 0 && timer2 > 1   = tnls1 
-      | timer2 == 0 && timer1 > 1   = tnls2 
-      | timer1 == 0 && timer2 == 1  = tnls1score 
-      | timer2 == 0 && timer1 == 1  = tnls2score 
-      | otherwise                   = multiTuns
+      | S.size opened2 == M.size graph - 1 = [s]
+      | timer1 > 1 && timer2 > 1           = [Two {pos1 = next1, pos2= next2, opened2 = opened2, score2 = score2}]
+      | timer1 == 1 && timer2 > 1          = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest1 opened2, score2 = score2 + oneScore}]
+      | timer2 == 1 && timer1 > 1          = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest2 opened2, score2 = score2 + twoScore}]
+      | timer1 == 1 && timer2 == 1         = [Two {pos1 = next1, pos2= next2, opened2 = S.insert dest2 $ S.insert dest1 opened2, score2 = if dest1 == dest2 then score2+oneScore else score2+oneScore+twoScore}]
+      | timer1 == 0 && timer2 > 1          = tnls1 
+      | timer2 == 0 && timer1 > 1          = tnls2 
+      | timer1 == 0 && timer2 == 1         = tnls1score 
+      | timer2 == 0 && timer1 == 1         = tnls2score 
+      | otherwise                          = multiTuns
     oneValve = fst $ fromJust $ M.lookup dest1 graph 
     twoValve = fst $ fromJust $ M.lookup dest2 graph 
     (dest1, timer1) = pos1
@@ -127,6 +129,8 @@ main = do
       scoreNodes = S.fromList $ "AA" : map nId (filter (\x -> valve x > 0) rawNodes)
       graph = M.fromList $ map (\x -> (nId x, x)) rawNodes
       tGraph = bfsMapper graph scoreNodes
+      oState = (State {pos = ("AA", 0), opened = S.empty, score = 0})
+      tState = (Two {pos1 = ("AA", 0), pos2 = ("AA", 0), opened2 = S.empty, score2 = 0})
       result = turns 30 tGraph (State {pos = ("AA", 0), opened = S.empty, score = 0})
       result' = turns' 26 tGraph (Two {pos1 = ("AA", 0), pos2 = ("AA", 0), opened2 = S.empty, score2 = 0})
   print $ maximum $ map score result
