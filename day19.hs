@@ -77,25 +77,38 @@ initStates bp = S.fromList [template, template {target=Clay}]
                    robGeo = 0
                  }
 
+numInc :: Int -> Int -> Int
+numInc x y = go (x +1) (y -1) x
+  where
+    go x y z
+      | y <= 0    = z
+      | otherwise = go (x + 1) (y -1) (x + z)
+
 multiTurn :: Set State -> Int -> Set State
 multiTurn sts 0 = sts  
 multiTurn sts n = ( multiTurn $ S.filter (\x -> maxPossible x >= maxCurrent) unfiltered) (n-1)
   where
     unfiltered = S.fromList $ concatMap stateIter sts
-    maxCurrent = maximum $ S.map (\x -> numGeo x + n * robGeo x) unfiltered
-    maxPossible x = numGeo x + (robGeo x * (n^2 + n) `div` 2) 
+    num = n + 1
+    maxCurrent = maximum $ S.map (\x -> numGeo x + num * robGeo x) unfiltered
+    maxPossible x = numGeo x + numInc (robGeo x) num 
 
 solver :: [Set State] -> Int -> Int
 solver sts int = foldl (folder (int -1)) 0 sts 
   where
     folder int acc st = acc + maximum (S.map (\x -> bpId (blueprint x) * (numGeo x + robGeo x)) $ multiTurn st int)
-  
 
 main = do
   rawInput <- readFile "day19.txt"
   let input = map words $ lines rawInput
       blueprints = map (\x -> BP {bpId = readInt $ init $ x !! 1, oreCost = readInt $ x !! 6, clayCost = readInt $ x !! 12, obsCost = (readInt $ x !! 18, readInt $ x !! 21), geoCost = (readInt $ x !! 27, readInt $ x !! 30)}) input
-      initHeadStates = initStates (head blueprints)
-      initLasttates = initStates (last blueprints)
+      part2BP = take 3 blueprints
+      initHeadStates = initStates (head part2BP)
+      initMidStates  = initStates (head $ tail part2BP)
+      initLastStates = initStates (last part2BP)
       allInitStates = map initStates blueprints
+      first = maximum $ S.map (\x -> numGeo x + robGeo x) $ multiTurn initHeadStates 31 
+      second = maximum $ S.map (\x -> numGeo x + robGeo x) $ multiTurn initMidStates 31 
+      third = maximum $ S.map (\x -> numGeo x + robGeo x) $ multiTurn initLastStates 31 
   print $ solver allInitStates 24
+  print $ first * second * third
