@@ -1,9 +1,7 @@
 import MyUtils (readInt)
-import Data.Set (Set)
-import qualified Data.Set as S
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.List (find, sort)
+import Data.List (find)
 import Data.Maybe (fromJust)
 
 type Pair = (Int, Int)
@@ -34,14 +32,13 @@ multiMixer :: Map Int Pair -> Int -> Int -> Map Int Pair
 multiMixer mp len 0 = mp
 multiMixer mp len t = multiMixer (mixer mp len) len (t - 1)
 
-
 main = do
   rawInput <- readFile "day20.txt"
   let input = M.fromList $ zip [0..] $ zip [0..] $ map readInt $ lines rawInput
       input' = M.fromList $ zip [0..] $ zip [0..] $ map ((*811589153) . readInt) $ lines rawInput
       mSize = M.size input
       singleMix = map snd $ M.toList $ mixer input mSize 
-      tenMixes = sort $ map snd $ M.toList $ multiMixer input' mSize 10
+      tenMixes = map snd $ M.toList $ multiMixer input' mSize 10
       zeroIndex = fst $ fromJust $ find (\(x, y) -> y == 0) singleMix
       num1 = snd $ fromJust $ find (\(x, y) -> x == (zeroIndex + 1000) `mod` mSize) singleMix
       num2 = snd $ fromJust $ find (\(x, y) -> x == (zeroIndex + 2000) `mod` mSize) singleMix
