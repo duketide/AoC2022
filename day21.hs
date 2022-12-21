@@ -58,13 +58,22 @@ solver' nums ops = go nums ops []
 rootChecker :: (String, [String]) -> Double
 rootChecker (rt, x:y:z:xs) = readDouble x - readDouble z 
 
-directionDeterminer :: Double -> Double -> String
-directionDeterminer d1 d2
-  | abs d2 < abs d1 = "up"
-  | otherwise       = "down"
-
 magnitudeDeterminer :: Double -> Int
 magnitudeDeterminer db = length $ show $ abs $ round db
+
+eqFinder :: Nums -> Ops -> Int -> Double
+eqFinder nums ops mag = go (readDouble $ '9' : replicate (mag - 1) '0') (mag - 1)
+  where
+    go :: Double -> Int -> Double
+    go curr place
+     | place < 0   = 42.0 
+     | diff == 0.0 = curr
+     | diff > 0    = go (curr + 9*(10^(place - 2))) (place - 1)
+     | otherwise   = go (curr - 10^(place - 1)) place
+         where 
+           diff   = rootChecker $ solver' numMap ops
+           numMap = M.toList $ M.insert "humn" curr $ M.fromList nums
+
 
 main = do
   rawInput <- readFile "day21.txt"
@@ -74,18 +83,8 @@ main = do
       result = M.fromList $ solver numMap ops
       humanVal = result M.! "humn"
       numMap' = M.toList $ M.insert "humn" (humanVal + 1) $ M.fromList numMap
-      numMap'' = M.toList $ M.insert "humn" (humanVal + 2) $ M.fromList numMap
-      numMap''' = M.toList $ M.insert "humn" diffval $ M.fromList numMap
-      diffval = 3.7126439618920000*(10^12)
       diff = rootChecker $ solver' numMap ops
       diff2 = rootChecker $ solver' numMap' ops
-      diff3 = rootChecker $ solver' numMap'' ops
       mag = magnitudeDeterminer (diff/(diff2 - diff))
-      starter = readDouble $ '9' : replicate (mag - 1) '0' 
   print $ result M.! "root"
-  print $ snd $ solver' numMap''' ops
-  print $ directionDeterminer diff diff2
-  print $ magnitudeDeterminer diff 
-  print diff
-  print starter
-  print $ diff /(diff2-diff)
+  print $ eqFinder numMap ops mag
