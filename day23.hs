@@ -93,4 +93,3 @@ main = do
      area = (xMax - xMin + 1) * (yMax - yMin + 1)
  print $ area - numElves 
  print $ severalRounds' input N 1
-
