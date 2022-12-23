@@ -1,9 +1,8 @@
 import MyUtils (readInt, trim)
-import Data.List.Split (splitOneOf, splitOn, chunksOf)
+import Data.List.Split (splitOneOf, splitOn)
 import Data.Char (isAlpha)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
 
 type Point = (Int, Int)
 data Tile = Open | Wall | Remove deriving (Show, Eq, Ord)
@@ -47,6 +46,35 @@ wrapper (x,y) facing mp = point
       E -> (wrapToW, y)
       W -> (wrapToE, y)
 
+--this wrapper' works only for folds like mine
+wrapper':: Point -> Facing -> Floor -> (Point, Facing)
+wrapper' (x, y) facing mp
+  | zone1 && n = ((1, x + 100), E) --zone6
+  | zone1 && w = ((1, 151 - y), E) --zone4
+  | zone2 && n = ((x - 100, 200), N) --zone6
+  | zone2 && e = ((100, 151 - y), W) --zone5
+  | zone2 && s = ((100, x - 50), W) --zone3
+  | zone3 && e = ((y + 50, 50), N) --zone2
+  | zone3 && w = ((y - 50, 101), S) --zone4
+  | zone4 && n = ((51, x + 50), E) --zone3
+  | zone4 && w = ((51, 151 - y), E) --zone1
+  | zone5 && e = ((150, 151 - y), W) --zone2
+  | zone5 && s = ((50, x + 100), W) --zone6
+  | zone6 && w = ((y - 100, 1)  , S) --zone1
+  | zone6 && e = ((y - 100, 150), N) --zone5
+  | zone6 && s = ((x + 100, 1), S) --zone2
+      where
+        n = facing == N
+        e = facing == E
+        w = facing == W
+        s = facing == S
+        zone1 = x < 101 && y < 51
+        zone2 = x > 100 && y < 51
+        zone3 = y < 101 && not (zone1 || zone2)
+        zone4 = y > 100 && y < 151 && x < 51
+        zone5 = y > 100 && y < 151 && x > 50
+        zone6 = y > 150
+
 rotate :: Facing -> String -> Facing
 rotate f d
   | d == "R"  = succ f
@@ -69,13 +97,41 @@ mover floor start facing = go start
           nextPoint = if M.member nextPoint' floor then nextPoint' else wrapper pt facing floor
           nextTile = floor M.! nextPoint
 
+mover' :: Floor -> Point -> Facing -> Int -> (Point, Facing)
+mover' floor start facing int = go start int facing
+  where
+    go :: Point -> Int -> Facing -> (Point, Facing)
+    go pt        0   f      = (pt, f)
+    go pt@(x, y) int f
+      | nextTile == Wall    = (pt, f)
+      | otherwise           = go nextPoint (int - 1) nextFacing 
+        where
+          nextPoint' = case f of
+            N -> (x, y - 1)
+            S -> (x, y + 1)
+            E -> (x + 1, y)
+            W -> (x - 1, y)
+          wrap = not (M.member nextPoint' floor)
+          wrappedTile = wrapper' pt facing floor
+          nextPoint = if not wrap then nextPoint' else fst wrappedTile 
+          nextFacing = if not wrap then f else snd wrappedTile
+          nextTile = floor M.! nextPoint
+
 moveOrRotate :: Floor -> (Point, Facing) -> String -> (Point, Facing)
 moveOrRotate mp (pt, facing) dir
   | isAlpha $ head dir = (pt, rotate facing dir)
   | otherwise          = (mover mp pt facing (readInt dir), facing)
 
+moveOrRotate' :: Floor -> (Point, Facing) -> String -> (Point, Facing)
+moveOrRotate' mp (pt, facing) dir
+  | isAlpha $ head dir = (pt, rotate facing dir)
+  | otherwise          = mover' mp pt facing (readInt dir)
+
 solver :: Floor -> (Point, Facing) -> [String] -> [(Point, Facing)]
 solver mp = scanl $ moveOrRotate mp
+
+solver' :: Floor -> (Point, Facing) -> [String] -> [(Point, Facing)]
+solver' mp = scanl $ moveOrRotate' mp
 
 main = do
   rawInput <- readFile "day22.txt"
@@ -91,10 +147,18 @@ main = do
       finalDirs = concatMap (\(x, y) -> [x, [y]]) dirTups ++ [last dirNums]
       startState = (startingPoint, E)
       allStates = solver finalMap (startingPoint, E) finalDirs
+      allStates' = solver' finalMap (startingPoint, E) finalDirs
       ((fCol, fRow), fFacing) = last allStates
+      ((fCol', fRow'), fFacing') = last allStates'
       fFacingVal = case fFacing of
         E -> 0
         S -> 1
         W -> 2
         N -> 3
+      fFacingVal' = case fFacing' of
+        E -> 0
+        S -> 1
+        W -> 2
+        N -> 3
   print $ (fRow * 1000) + (fCol * 4) + fFacingVal
+  print $ (fRow' * 1000) + (fCol' * 4) + fFacingVal'
