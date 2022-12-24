@@ -52,6 +52,20 @@ singleTurn locs poss blizz = S.filter (`S.member` blizPoss) $ S.foldr (\(x, y) a
     blizPoss = S.filter (\x -> not $ S.member x blizz') poss
     blizz' = S.map fst blizz
 
+singleTurn' :: Set (Point, Int) -> Set Point -> Blizzards -> Set (Point, Int)
+singleTurn' locs poss blizz = goalChecker $ S.filter (\x -> S.member (fst x) blizPoss) $ S.foldr (\((x, y), z) acc -> S.insert ((x, y), z) $ S.insert ((x+1, y), z) $ S.insert ((x-1, y), z) $ S.insert ((x, y+1), z) $ S.insert ((x, y-1), z) acc)  S.empty locs
+  where
+    blizPoss = S.filter (\x -> not $ S.member x blizz') poss
+    blizz' = S.map fst blizz
+
+goalChecker :: Set (Point, Int) -> Set (Point, Int)
+goalChecker = S.map mapper
+  where
+    mapper x
+      | x == ((100, 36), 0) = ((100, 36), 1)
+      | x == ((1, 0), 1)    = ((1, 0), 2)
+      | otherwise           = x
+
 solver :: (Int, Int) -> (Int, Int) -> Set Point -> Set Point -> Blizzards -> Int
 solver we sn locs poss blizz = go locs blizz 0
   where
@@ -62,15 +76,26 @@ solver we sn locs poss blizz = go locs blizz 0
           where
             nextBlizz = blizzardIter blizz we sn
 
+solver' :: (Int, Int) -> (Int, Int) -> Set (Point, Int) -> Set Point -> Blizzards -> Int
+solver' we sn locs poss blizz = go locs blizz 0
+  where
+    go :: Set (Point, Int) -> Blizzards -> Int -> Int
+    go locs blizz n
+      | S.member ((100, 36), 2) locs = n
+      | otherwise               = go (singleTurn' locs poss nextBlizz) nextBlizz (n + 1)
+          where
+            nextBlizz = blizzardIter blizz we sn
+
 main = do
   rawInput <- readFile "day24.txt"
   let input = map (zip [0..]) $ lines rawInput
       blizzards = blizzardMapper input
-      floor = floorMapper input
+      flr = floorMapper input
       wBound = 1
       nBound = 1
       sBound = length input - 2
       eBound = length (head input) - 2
       we = (wBound, eBound)
       sn = (sBound, nBound)
-  print $ solver we sn (S.singleton (1, 0)) floor blizzards
+  print $ solver we sn (S.singleton (1, 0)) flr blizzards
+  print $ solver' we sn (S.singleton ((1, 0), 0)) flr blizzards
