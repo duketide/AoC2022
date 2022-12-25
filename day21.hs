@@ -49,7 +49,7 @@ revEval st mt mt'
           "/" -> if otherIsFirst then div else (*)
   
 main = do
-  rawInput <- readFile "AoC2022/day21.txt"
+  rawInput <- readFile "day21.txt"
   let input = map words $ lines rawInput
       inputMap = foldr (\(x:xs) acc -> M.insert (init x) (readTree xs) acc) M.empty input
       inputMap' = foldr (\(x:xs) acc -> M.insert (init x) (M {mId = init x, payload = readTree xs}) acc) M.empty input
