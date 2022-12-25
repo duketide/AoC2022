@@ -2,8 +2,8 @@ import MyUtils (readInt)
 import Data.Map (Map)
 import qualified Data.Map as M
 
-fivesAdder :: Map Char Int -> [String] -> Int
-fivesAdder mp fl = sum $ map (snd . mapper) fl
+snafuAdder :: Map Char Int -> [String] -> Int
+snafuAdder mp fl = sum $ map (snd . mapper) fl
   where
     mapper = foldr (\char (p, tot) -> (p + 1, tot + (mp M.! char) * (5^p))) (0, 0)
 
@@ -34,7 +34,7 @@ main = do
   rawInput <- readFile "day25.txt"
   let input = lines rawInput
       myMap = M.fromList [('2', 2), ('1', 1), ('0', 0), ('-', -1), ('=', -2)]
-      inDec = fivesAdder myMap input
+      inDec = snafuAdder myMap input
       inFives = decToFive $ fromIntegral inDec
       inSnafu = fiveToSnafu inFives
   print inSnafu
