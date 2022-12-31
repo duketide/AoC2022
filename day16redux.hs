@@ -20,7 +20,6 @@ data State = State {
                      pos :: (String, Int)
                    , opened :: Set String
                    , score :: Int
-                   , scoreByRoom :: Map String Int
                    , freeze :: Bool
                    } deriving (Show)
 
@@ -41,12 +40,12 @@ bfsMapper gr rms = M.fromList $ S.toList $ S.map mapper rms
       where vlv = valve $ fromJust $ M.lookup rm gr
 
 stateSpawns :: TGraph -> Int -> State -> [State]
-stateSpawns graph turn s@(State { pos, opened, score, scoreByRoom, freeze }) = newStates 
+stateSpawns graph turn s@(State { pos, opened, score, freeze }) = newStates 
   where
     newStates
       | S.size opened == M.size graph - 1 = [s]
       | freeze                            = [s]
-      | timer == 1                        = [s{pos = (dest, 0), opened = S.insert dest opened, score = score+sameScore, scoreByRoom = M.insert dest sameScore scoreByRoom}]
+      | timer == 1                        = [s{pos = (dest, 0), opened = S.insert dest opened, score = score+sameScore}]
       | timer == 0                        = (s{freeze=True}) : tnls
       | otherwise                         = [s {pos = (dest, timer -1)}]
     sameValve = fst $ fromJust $ M.lookup dest graph 
@@ -80,11 +79,9 @@ main = do
       scoreNodes = S.fromList $ "AA" : map nId (filter (\x -> valve x > 0) rawNodes)
       graph = M.fromList $ map (\x -> (nId x, x)) rawNodes
       tGraph = bfsMapper graph scoreNodes
-      oState = (State {pos = ("AA", 0), opened = S.empty, score = 0, scoreByRoom = M.empty, freeze=False})
+      oState = (State {pos = ("AA", 0), opened = S.empty, score = 0, freeze=False})
       result = turns 30 tGraph oState
-      resultList = M.fromListWith (\a b -> if fst a > fst b then a else b) [(opened x, (score x, scoreByRoom x)) | x <- turns 26 tGraph oState]
-      scoresByRoom = map (M.assocs . snd . snd) $ M.assocs resultList
-      pairs = [foldr (\(k, v) acc -> M.insertWith max k v acc) (M.fromList x) y | x : a <- tails scoresByRoom, y <- a] 
-      result2 = maximumBy (\x y -> M.foldr (+) 0 x `compare` M.foldr (+) 0 y) pairs
+      resultList = M.fromListWith max [(opened x, score x) | x <- turns 26 tGraph oState]
+      pairs = [x + y | (ox, x) : a <- tails (M.assocs resultList), (oy, y) <- a, S.null (S.intersection ox oy)] 
   print $ score $ maximumBy (\x y -> score x `compare` score y) result
-  print $ M.foldr (+) 0 result2
+  print $ maximum pairs 
