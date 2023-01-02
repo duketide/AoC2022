@@ -1,8 +1,8 @@
 import MyUtils (readInt)
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Heap (MaxPrioHeap)
 import qualified Data.Heap as H
-import qualified Data.Set as S
 import Data.Maybe (fromJust)
 
 data Blueprint = BP 
@@ -88,17 +88,17 @@ initMetaState turns bp = M (H.fromList [(numInc 0 turns, template), (numInc 0 tu
                  }
 
 numInc :: Int -> Int -> Int
-numInc x y = go (x +1) (y -1) x
+numInc x y = go (x + 1) (y - 1) x
   where
     go x y z
       | y <= 0    = z
-      | otherwise = go (x + 1) (y -1) (x + z)
+      | otherwise = go (x + 1) (y - 1) (x + z)
 
 multiTurn :: MState -> Int -> State
 multiTurn mst n = if timer == n then node else multiTurn nextMSt n
   where
     q0 = queue mst 
-    ((prio, node), q1) = fromJust $ H.view q0
+    ((prio, node), q1) = fromJust $ H.view q0 --the heap starts with two members, and at least one is added each time one is viewed, so fromJust should be okay
     timer = minutes node
     vis = visited mst
     visCheck = node{minutes=0}
@@ -109,9 +109,9 @@ multiTurn mst n = if timer == n then node else multiTurn nextMSt n
     maxPossible x = numGeo x + numInc (robGeo x) (n - timer)
 
 solver :: [MState] -> Int -> Int
-solver sts int = foldl (folder int) 0 sts 
+solver sts int = foldr (folder int) 0 sts 
   where
-    folder int acc st = acc + (bpId (blueprint winningState) * numGeo winningState)
+    folder int st acc = acc + (bpId (blueprint winningState) * numGeo winningState)
       where winningState = multiTurn st int
 
 main = do
