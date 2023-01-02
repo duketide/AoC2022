@@ -13,7 +13,7 @@ data Blueprint = BP
     geoCost :: (Int, Int)
   } deriving (Show, Eq, Ord)
 
-data Robot = Ore | Clay | Obsidian | Geode deriving (Show, Eq, Ord)
+data Robot = Ore | Clay | Obsidian | Geode | Remove deriving (Show, Eq, Ord)
 
 data State = S
   { blueprint :: Blueprint,
@@ -48,10 +48,11 @@ stateIter st@(S {blueprint, target, minutes, candidates, numOre, numClay, numObs
      Clay -> numOre >= clayPrice
      Obsidian -> numOre >= obsOrePrice && numClay >= obsClayPrice
      Geode -> numOre >= geoOrePrice && numObs >= geoObsPrice
-   candidates'
-     | robObs' > 0 = [Ore, Clay, Obsidian, Geode]
-     | robClay > 0 = [Ore, Clay, Obsidian]
-     | otherwise   = [Ore, Clay]
+   candOre = if robOre' < maximum [orePrice, clayPrice, obsOrePrice, geoOrePrice] then Ore else Remove
+   candClay = if robClay' < obsClayPrice then Clay else Remove
+   candObs = if robObs' < geoObsPrice then Obsidian else Remove
+   candGeo = if robObs' > 0 then Geode else Remove
+   candidates' = filter (/= Remove) [candOre, candClay, candObs, candGeo]
    numOre' = numOre + robOre - spentOre
    numClay' = numClay + robClay - spentClay
    numObs' = numObs + robObs - spentObs
