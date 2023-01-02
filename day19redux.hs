@@ -50,7 +50,7 @@ stateIter st@(S {blueprint, target, minutes, candidates, numOre, numClay, numObs
      Geode -> numOre >= geoOrePrice && numObs >= geoObsPrice
    candOre = if robOre' < maximum [orePrice, clayPrice, obsOrePrice, geoOrePrice] then Ore else Remove
    candClay = if robClay' < obsClayPrice then Clay else Remove
-   candObs = if robObs' < geoObsPrice then Obsidian else Remove
+   candObs = if robClay' > 0 && robObs' < geoObsPrice then Obsidian else Remove
    candGeo = if robObs' > 0 then Geode else Remove
    candidates' = filter (/= Remove) [candOre, candClay, candObs, candGeo]
    numOre' = numOre + robOre - spentOre
